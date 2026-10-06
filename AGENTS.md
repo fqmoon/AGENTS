@@ -1,7 +1,8 @@
 ## 本地指令
 
-- 如果与本文件同目录存在 `AGENTS.local.md`，开始任务时读取它，作为本机专用的补充指令
-- `AGENTS.local.md` 与本文件冲突时，以 `AGENTS.local.md` 为准
+- 加载本文件后，立即检查同目录是否存在 `AGENTS.local.md`
+- 如果存在，立即读取 `AGENTS.local.md`；在读取完成前不要开始处理当前任务
+- `AGENTS.local.md` 作为本机专用指令；与本文件冲突时，以 `AGENTS.local.md` 为准
 - `AGENTS.local.md` 不存在时直接忽略，不视为错误
 
 ## 操作约束
