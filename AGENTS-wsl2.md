@@ -1,3 +1,4 @@
+# 本地环境规则
 
 ## subagent 配置
 
@@ -10,4 +11,3 @@ subagent 应该选择便宜、快速的模型。默认使用 `gpt-6-luna + high`
 - rg (ripgrep), 文本搜索工具，可代替 grep
 - fdfind (fd), 文件查找工具，可代替 find
 - jq, json 解析、查询、处理工具
-
