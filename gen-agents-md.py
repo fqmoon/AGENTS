@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge common and platform-specific AGENTS instructions."""
+"""Merge default and optional AGENTS instruction files."""
 
 import argparse
 from pathlib import Path
@@ -8,17 +8,18 @@ import re
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("platform", help="platform name, e.g. wsl2")
+    parser.add_argument("agents", nargs="*", help="additional AGENT keywords, e.g. wsl2 windows")
     parser.add_argument("output_dir", help="output directory (required)")
     args = parser.parse_args()
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", args.platform):
-        parser.error("platform must contain only letters, digits, underscores or hyphens")
+
+    for agent in args.agents:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", agent):
+            parser.error(f"invalid AGENT keyword: {agent!r}")
 
     root = Path(__file__).resolve().parent
     try:
-        common = (root / "AGENTS.md").read_text(encoding="utf-8")
-        platform = (root / f"AGENTS-{args.platform}.md").read_text(encoding="utf-8")
-        merged = common.rstrip() + "\n\n" + platform.strip() + "\n"
+        sources = [root / "AGENTS.md"] + [root / f"AGENTS-{agent}.md" for agent in args.agents]
+        merged = "\n\n".join(path.read_text(encoding="utf-8").strip() for path in sources) + "\n"
         output = Path(args.output_dir).expanduser() / "AGENTS.md"
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(merged, encoding="utf-8")
