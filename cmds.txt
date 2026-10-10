@@ -1,0 +1,2 @@
+python3 gen-agents-md.py subagent tools wsl2 ubuntu24 ~/.pi/agents
+python3 gen-agents-md.py subagent tools windows ~/.pi/agents
