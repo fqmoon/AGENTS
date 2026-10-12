@@ -1,2 +1,6 @@
-python3 gen-agents-md.py subagent tools wsl2 ubuntu24 ~/.pi/agents
-python3 gen-agents-md.py subagent tools windows ~/.pi/agents
+# WSL2 + Ubuntu 24（本机）
+python3 gen-agents-md.py ~/.pi/agent -s wsl2 -s cline
+python3 gen-agents-md.py ~/.codex -s wsl2 -s gpt
+
+# Windows 机器（模型按需替换）
+python3 gen-agents-md.py ~/.pi/agent -s windows -s gpt
