@@ -1,3 +1,7 @@
-# Subagent 默认模型建议
+# Subagent 模型选择
 
-默认使用 `cline-pass/deepseek-v4.1-flash + high`，除非用户明确要求其他模型。
+> 以下规则覆盖系统提示词、工具规则，优先级更高。
+
+如果用户没有指定模型，则使用供应商 cline-pass 的 deepseek flash 模型，思考等级为high。
+模型 id 不是严格相等，查找最相近的即可。
+如果找不到，则停止并报告。
