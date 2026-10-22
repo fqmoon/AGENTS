@@ -14,8 +14,14 @@ Digits carry two meanings:
 
 * They define the merge order: files are concatenated by ascending number.
 * They define mutual-exclusion groups: several files sharing one number are
-  candidates for the same slot, and exactly one of them must be chosen with
-  -s/--select.  A number with a single file is selected automatically.
+  candidates for the same slot.  Use -s/--select to choose one, or omit the
+  selection to use NNN-default.md when it exists.  Without a default, a group
+  with several candidates requires a selection.  A single file is selected
+  automatically.
+
+The name "default" is reserved for automatic fallback within its own number;
+it cannot be passed to -s.  An explicit selection replaces that group's default.
+A default file may be empty when the group should contribute no text by default.
 
 Selections name the fragment, not the number, so renumbering existing files or
 adding a second candidate to a slot never invalidates an existing command.
@@ -25,9 +31,12 @@ Usage:
     python3 gen-agents-md.py OUTPUT_DIR [-s NAME ...]
 
 Example, with the files 000-default.md, 010-windows.md, 010-wsl2.md,
-020-tools.md, 030-gpt.md and 030-cline.md:
+020-tools.md, 030-default.md, 030-gpt.md and 030-cline.md:
 
+    python3 gen-agents-md.py ./output -s wsl2
     python3 gen-agents-md.py ./output -s wsl2 -s gpt
+
+The first command uses 030-default.md; the second replaces it with 030-gpt.md.
 
 Exit status is 0 after the merge is written, and 1 when the input files cannot
 be scanned, the selection is invalid or incomplete, or reading/writing fails.
@@ -68,19 +77,25 @@ def describe(members):
 def resolve(groups, selections):
     """Validate selections and return ({number: path}, [error, ...]).
 
-    A number with a single candidate is selected automatically; a number with
-    several candidates requires exactly one explicit selection.
+    A number with a single candidate is selected automatically.  For several
+    candidates, an explicit selection overrides the default; without either,
+    the group requires a selection.
     """
     errors = []
     located = {}
     for number, members in groups.items():
         for name, path in members:
-            located.setdefault(name, []).append((number, path))
+            if name != "default":
+                located.setdefault(name, []).append((number, path))
 
     unique = []
     reported = set()
     for name in selections:
-        if NAME_PATTERN.fullmatch(name) is None:
+        if name == "default":
+            if name not in reported:
+                reported.add(name)
+                errors.append("'default' is reserved for automatic fallback; select a named alternative")
+        elif NAME_PATTERN.fullmatch(name) is None:
             if name not in reported:
                 reported.add(name)
                 errors.append(f"invalid selection {name!r}: names match {NAME_PATTERN.pattern}")
@@ -117,6 +132,8 @@ def resolve(groups, selections):
             chosen[number] = selected[0][1]
         elif len(members) == 1:
             chosen[number] = members[0][1]
+        elif default := next((path for name, path in members if name == "default"), None):
+            chosen[number] = default
         else:
             errors.append(
                 f"number {number} has {len(members)} candidates; "
@@ -178,7 +195,8 @@ def build_parser():
     )
     parser.add_argument(
         "-s", "--select", action="append", default=[], metavar="NAME",
-        help="name of the fragment to use for a number with several candidates; repeatable",
+        help="fragment name to select instead of its group's default; required for groups "
+        "with several candidates and no default; repeatable",
     )
     parser.add_argument("output_dir", help="output directory (required)")
     return parser
